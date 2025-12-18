@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TechnologyCard from './components/TechnologyCard';
 import ProgressHeader from './components/ProgressHeader';
 import QuickActions from './components/QuickActions';
@@ -7,49 +7,14 @@ import useLocalStorage from 'use-local-storage';
 
 function App() {
   const initialTechnologies = [
-    { id: 1, title: 'React Components', description: 'Изучение базовых компонентов', status: 'not-started' },
-    { id: 2, title: 'JSX Syntax', description: 'Освоение синтаксиса JSX', status: 'not-started' },
-    { id: 3, title: 'State Management', description: 'Работа с состоянием компонентов', status: 'not-started' }
+    { id: 1, title: 'React Components', description: 'Изучение базовых компонентов', status: 'not-started', notes: '' },
+    { id: 2, title: 'JSX Syntax', description: 'Освоение синтаксиса JSX', status: 'not-started', notes: '' },
+    { id: 3, title: 'State Management', description: 'Работа с состоянием компонентов', status: 'not-started', notes: '' }
   ];
 
   const [technologies, setTechnologies] = useLocalStorage('techTrackerData', initialTechnologies);
   const [filter, setFilter] = useState('all');
-
-  // Загрузка из localStorage
-  useEffect(() => {
-    const saved = window.localStorage.getItem('techTrackerData');
-    if (saved) {
-      try {
-        let parsed = JSON.parse(saved);
-
-        // // Гарантируем, что у всех есть поле notes
-        // parsed = parsed.map(tech => ({
-        //   ...tech,
-        //   notes: tech.notes !== undefined ? tech.notes : ''
-        // }));
-
-        setTechnologies(parsed);
-        console.log('Загружено из localStorage:', parsed);
-      } catch (e) {
-        console.error('Ошибка при загрузке:', e);
-        setTechnologies(initialTechnologies.map(t => ({ ...t, notes: '' })));
-      }
-    } else {
-      console.log('Нет данных в localStorage');
-      // Добавляем notes к начальным
-      setTechnologies(initialTechnologies.map(t => ({ ...t, notes: '' })));
-    }
-  }, []);
-
-  // Сохранение в localStorage
-  useEffect(() => {
-    try {
-      setTechnologies('techTrackerData', JSON.stringify(technologies));
-      console.log('Сохранено в localStorage:', technologies);
-    } catch (e) {
-      console.error('Ошибка при сохранении:', e);
-    }
-  }, [technologies]);
+  const [searchQuery, setSearchQuery] = useState(''); // 🔥 Новое состояние для поиска
 
   // === Функции ===
   const updateTechnologyStatus = (id) => {
@@ -82,14 +47,20 @@ function App() {
     }
   };
 
-  // === Фильтрация с защитой ===
-  const filtered = technologies.map(tech => ({
-    ...tech,
-    notes: tech.notes !== undefined ? tech.notes : ''
-  })).filter(tech => {
-    if (filter === 'all') return true;
-    return tech.status === filter;
-  });
+  // === Фильтрация с поиском ===
+  const filtered = technologies
+    .filter(tech => {
+      if (filter !== 'all' && tech.status !== filter) return false;
+      return true;
+    })
+    .filter(tech => {
+      // Поиск по названию и описанию
+      const query = searchQuery.toLowerCase();
+      return (
+        tech.title.toLowerCase().includes(query) ||
+        tech.description.toLowerCase().includes(query)
+      );
+    });
 
   return (
     <div className="App">
@@ -105,6 +76,17 @@ function App() {
         onRandomNext={randomNext}
       />
 
+      {/* 🔥 Поле поиска */}
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Поиск технологий..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <span>Найдено: {filtered.length}</span>
+      </div>
+
       <div className="filters">
         {['all', 'not-started', 'in-progress', 'completed'].map(f => (
           <button key={f} onClick={() => setFilter(f)} className={filter === f ? 'active' : ''}>
@@ -115,7 +97,7 @@ function App() {
 
       <main className="tech-list">
         {filtered.length === 0 ? (
-          <p>Нет технологий с выбранным статусом</p>
+          <p>Нет технологий по запросу "{searchQuery}"</p>
         ) : (
           filtered.map(tech => (
             <TechnologyCard

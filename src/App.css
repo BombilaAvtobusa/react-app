@@ -40,3 +40,28 @@ body {
   color: white;
   border-color: #2196f3;
 }
+
+/* src/App.css (в конец файла) */
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.search-box input {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  max-width: 300px;
+  width: 100%;
+}
+
+.search-box span {
+  font-size: 0.9rem;
+  color: #666;
+}
