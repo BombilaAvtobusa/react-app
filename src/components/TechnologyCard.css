@@ -1,0 +1,59 @@
+.technology-card {
+  padding: 20px;
+  margin: 12px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  max-width: 300px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 5px solid #ccc;
+  position: relative;
+}
+
+.technology-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.status-not-started { border-left-color: #ff6b6b; background-color: #fff5f5; }
+.status-in-progress { border-left-color: #4ecdc4; background-color: #f0fdfa; }
+.status-completed { border-left: 5px solid #45b7d1; background-color: #f0f7ff; }
+
+.tech-card__status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  background: #999;
+}
+
+.status-not-started .tech-card__status { background: #ff6b6b; }
+.status-in-progress .tech-card__status { background: #4ecdc4; }
+.status-completed .tech-card__status { background: #45b7d1; }
+
+/* Заметки */
+.notes-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #ddd;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 0.9rem;
+  font-family: inherit;
+  margin-top: 6px;
+}
+
+.notes-hint {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 4px;
+}
