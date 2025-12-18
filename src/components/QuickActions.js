@@ -1,11 +1,58 @@
-import React from 'react';
+// src/components/QuickActions.js
+import React, { useState } from 'react';
+import Modal from './Modal';
+import './QuickActions.css';
 
-export default function QuickActions({ onMarkAllCompleted, onResetAll, onRandomNext }) {
+export default function QuickActions({ onMarkAllCompleted, onResetAll, technologies }) {
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const handleExport = () => {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      technologies: technologies
+    };
+    const dataStr = JSON.stringify(data, null, 2);
+
+    // Для скачивания файла
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tech-tracker-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setShowExportModal(true);
+  };
+
   return (
-    <div style={{ textAlign: 'center', margin: '20px 0' }}>
-      <button onClick={onMarkAllCompleted} style={{ margin: '0 8px' }}>✅ Все готово</button>
-      <button onClick={onResetAll} style={{ margin: '0 8px' }}>🔄 Сбросить</button>
-      <button onClick={onRandomNext} style={{ margin: '0 8px' }}>🎲 Случайно</button>
+    <div className="quick-actions">
+      <h3>Быстрые действия</h3>
+      <div className="action-buttons">
+        <button onClick={onMarkAllCompleted} className="btn btn-success">
+          ✅ Отметить все как выполненные
+        </button>
+        <button onClick={onResetAll} className="btn btn-warning">
+          🔄 Сбросить все статусы
+        </button>
+        <button onClick={handleExport} className="btn btn-info">
+          📤 Экспорт данных
+        </button>
+      </div>
+
+      <Modal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Экспорт данных"
+      >
+        <p>Данные успешно экспортированы!</p>
+        <p>Файл сохранён на ваш компьютер.</p>
+        <button onClick={() => setShowExportModal(false)} className="btn btn-primary">
+          Закрыть
+        </button>
+      </Modal>
     </div>
   );
 }

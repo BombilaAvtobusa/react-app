@@ -1,60 +1,25 @@
+// src/App.js
 import React, { useState } from 'react';
+import useTechnologies from './hooks/useTechnologies';
+import ProgressBar from './components/ProgressBar';
 import TechnologyCard from './components/TechnologyCard';
-import ProgressHeader from './components/ProgressHeader';
 import QuickActions from './components/QuickActions';
 import './App.css';
-import useLocalStorage from 'use-local-storage';
 
 function App() {
-  const initialTechnologies = [
-    { id: 1, title: 'React Components', description: 'Изучение базовых компонентов', status: 'not-started', notes: '' },
-    { id: 2, title: 'JSX Syntax', description: 'Освоение синтаксиса JSX', status: 'not-started', notes: '' },
-    { id: 3, title: 'State Management', description: 'Работа с состоянием компонентов', status: 'not-started', notes: '' }
-  ];
+  const { technologies, updateStatus, updateNotes, progress } = useTechnologies();
 
-  const [technologies, setTechnologies] = useLocalStorage('techTrackerData', initialTechnologies);
+  // Фильтры и поиск
   const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState(''); // 🔥 Новое состояние для поиска
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // === Функции ===
-  const updateTechnologyStatus = (id) => {
-    setTechnologies(prev =>
-      prev.map(tech => {
-        if (tech.id !== id) return tech;
-        if (tech.status === 'not-started') return { ...tech, status: 'in-progress' };
-        if (tech.status === 'in-progress') return { ...tech, status: 'completed' };
-        if (tech.status === 'completed') return { ...tech, status: 'not-started' };
-        return tech;
-      })
-    );
-  };
-
-  const updateTechnologyNotes = (techId, newNotes) => {
-    setTechnologies(prevTech => 
-      prevTech.map(tech => 
-        tech.id === techId ? { ...tech, notes: newNotes } : tech
-      )
-    );
-  };
-
-  const markAllCompleted = () => setTechnologies(prev => prev.map(t => ({ ...t, status: 'completed' })));
-  const resetAll = () => setTechnologies(prev => prev.map(t => ({ ...t, status: 'not-started' })));
-  const randomNext = () => {
-    const notStarted = technologies.filter(t => t.status === 'not-started');
-    if (notStarted.length > 0) {
-      const random = notStarted[Math.floor(Math.random() * notStarted.length)];
-      updateTechnologyStatus(random.id);
-    }
-  };
-
-  // === Фильтрация с поиском ===
+  // Фильтрация с поиском
   const filtered = technologies
     .filter(tech => {
       if (filter !== 'all' && tech.status !== filter) return false;
       return true;
     })
     .filter(tech => {
-      // Поиск по названию и описанию
       const query = searchQuery.toLowerCase();
       return (
         tech.title.toLowerCase().includes(query) ||
@@ -62,21 +27,43 @@ function App() {
       );
     });
 
+  // === Quick Actions ===
+  const markAllCompleted = () => {
+    technologies.forEach(tech => updateStatus(tech.id, 'completed'));
+  };
+
+  const resetAll = () => {
+    technologies.forEach(tech => updateStatus(tech.id, 'not-started'));
+  };
+
+  const randomNext = () => {
+    const notStarted = technologies.filter(t => t.status === 'not-started');
+    if (notStarted.length > 0) {
+      const random = notStarted[Math.floor(Math.random() * notStarted.length)];
+      updateStatus(random.id, 'in-progress');
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Трекер изучения технологий</h1>
+        <ProgressBar 
+          progress={progress}
+          label="Общий прогресс"
+          color="#4CAF50"
+          animated={true}
+          height={20}
+        />
       </header>
-
-      <ProgressHeader technologies={technologies} />
 
       <QuickActions
         onMarkAllCompleted={markAllCompleted}
         onResetAll={resetAll}
-        onRandomNext={randomNext}
+        technologies={technologies} // ← передаём технологии для экспорта
       />
 
-      {/* 🔥 Поле поиска */}
+      {/* 🔥 Поиск */}
       <div className="search-box">
         <input
           type="text"
@@ -87,6 +74,7 @@ function App() {
         <span>Найдено: {filtered.length}</span>
       </div>
 
+      {/* Фильтры */}
       <div className="filters">
         {['all', 'not-started', 'in-progress', 'completed'].map(f => (
           <button key={f} onClick={() => setFilter(f)} className={filter === f ? 'active' : ''}>
@@ -102,13 +90,9 @@ function App() {
           filtered.map(tech => (
             <TechnologyCard
               key={tech.id}
-              id={tech.id}
-              title={tech.title}
-              description={tech.description}
-              status={tech.status}
-              notes={tech.notes}
-              onStatusChange={updateTechnologyStatus}
-              onNotesChange={updateTechnologyNotes}
+              technology={tech}
+              onStatusChange={updateStatus}
+              onNotesChange={updateNotes}
             />
           ))
         )}
