@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import useLocalStorage from 'use-local-storage';
 
-// Начальные данные
 const initialTechnologies = [
   { 
     id: 1, 
@@ -49,6 +48,23 @@ export default function useTechnologies() {
     );
   };
 
+  const deleteTechnology = (techId) => {
+    setTechnologies(prev => prev.filter(tech => tech.id !== techId));
+  };
+
+  // ✅ НОВОЕ: функция добавления
+  const addTechnology = async (techData) => {
+    const newTech = {
+      id: Date.now(),
+      ...techData,
+      status: 'not-started',
+      notes: '',
+      createdAt: new Date().toISOString()
+    };
+    setTechnologies(prev => [...prev, newTech]);
+    return newTech;
+  };
+
   const calculateProgress = () => {
     if (technologies.length === 0) return 0;
     const completed = technologies.filter(tech => tech.status === 'completed').length;
@@ -59,6 +75,8 @@ export default function useTechnologies() {
     technologies,
     updateStatus,
     updateNotes,
+    deleteTechnology,
+    addTechnology, // ✅
     progress: calculateProgress()
   };
 }

@@ -1,15 +1,33 @@
+// src/components/TechnologyCard.js
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './TechnologyCard.css';
 
 export default function TechnologyCard({ 
   technology, 
   onStatusChange, 
-  onNotesChange 
+  onNotesChange,
+  onDelete // ✅
 }) {
   const { id, title, description, status, notes, category } = technology;
 
+  const handleStatusClick = () => {
+    let newStatus = 'not-started';
+    if (status === 'not-started') newStatus = 'in-progress';
+    else if (status === 'in-progress') newStatus = 'completed';
+    else if (status === 'completed') newStatus = 'not-started';
+
+    onStatusChange(id, newStatus);
+  };
+
   const handleNoteChange = (e) => {
     onNotesChange(id, e.target.value);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(`Удалить технологию "${title}"?`)) {
+      onDelete(id);
+    }
   };
 
   const getStatusDisplay = () => {
@@ -25,15 +43,20 @@ export default function TechnologyCard({
   const noteValue = notes || '';
 
   return (
-    <div 
-      className={`technology-card status-${status}`}
-      onClick={() => onStatusChange(id, status === 'not-started' ? 'in-progress' : status === 'in-progress' ? 'completed' : 'not-started')}
-    >
-      <h3 className="tech-card__title">{title}</h3>
+    <div className={`technology-card status-${status}`}>
+      <div className="card-header">
+        <h3 className="tech-card__title">{title}</h3>
+        <button className="delete-btn" onClick={handleDelete} aria-label="Удалить технологию">🗑</button>
+      </div>
+
       <p className="tech-card__description">{description}</p>
-      <span className="tech-card__status">
-        {display.icon} {display.text}
-      </span>
+
+      <div className="status-section" onClick={handleStatusClick} style={{ cursor: 'pointer' }}>
+        <span className="tech-card__status">
+          {display.icon} {display.text}
+        </span>
+      </div>
+
       {category && <div className="tech-category">{category}</div>}
 
       {/* Заметки */}
@@ -43,12 +66,18 @@ export default function TechnologyCard({
           value={noteValue}
           onChange={handleNoteChange}
           placeholder="Записывайте сюда важные моменты..."
-          rows="3"
+          rows="2"
           className="notes-textarea"
         />
         <div className="notes-hint">
           {noteValue.length > 0 ? `Заметка (${noteValue.length} символов)` : 'Добавьте заметку'}
         </div>
+      </div>
+
+      <div className="card-actions">
+        <Link to={`/technology/${id}`} className="btn-link">
+          Подробнее →
+        </Link>
       </div>
     </div>
   );
